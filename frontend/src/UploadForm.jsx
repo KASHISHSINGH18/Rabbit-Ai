@@ -34,7 +34,8 @@ const UploadForm = () => {
 
     try {
       // Get the API URL from environment variable, fallback to localhost for development
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const apiUrl = rawApiUrl.startsWith('http') ? rawApiUrl : `https://${rawApiUrl}`;
       const response = await axios.post(`${apiUrl}/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
