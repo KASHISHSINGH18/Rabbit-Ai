@@ -76,29 +76,31 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       return res.status(400).json({ detail: 'Email address is required' });
     }
     
-    // Input Sanitization: Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email_address)) {
       return res.status(400).json({ detail: 'Invalid email address format' });
     }
 
-    // Parse the file safely with XLSX
     const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
-    // Convert to JSON
     const data = XLSX.utils.sheet_to_json(sheet);
     
     if (data.length === 0) {
       return res.status(400).json({ detail: 'File is empty or cannot be parsed' });
     }
 
-    // Extract a sample for the AI (first 100 rows to avoid token explosion)
     const sampleData = data.slice(0, 100);
     const dataString = JSON.stringify(sampleData);
 
     const summary = await generateSummary(dataString);
-    await sendEmailSummary(email_address, summary);
+    
+    // Attempt to send email, but don't fail the request if SMTP times out (common on cloud free tiers)
+    try {
+      await sendEmailSummary(email_address, summary);
+    } catch (emailErr) {
+      console.warn("Email delivery failed, but summary was generated:", emailErr.message);
+    }
 
     res.json({ status: 'success', summary });
   } catch (err) {
