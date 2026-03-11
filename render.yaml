@@ -2,6 +2,7 @@ services:
   - type: web
     name: rabbit-ai-backend
     env: node
+    plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: node index.js
@@ -23,6 +24,7 @@ services:
   - type: web
     name: rabbit-ai-frontend
     env: static
+    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
