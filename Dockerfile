@@ -1,16 +1,19 @@
-FROM python:3.10-slim
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Install dependencies
-COPY backend/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies first for better caching
+COPY backend/package.json backend/package-lock.json* ./backend/
+WORKDIR /app/backend
+RUN npm install
 
 # Copy backend application code
-COPY backend/ ./
+WORKDIR /app
+COPY backend/ ./backend/
 
-# Expose FastAPI port
+# Expose Node.js (Express) port
 EXPOSE 8000
 
-# Start Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start Node Server
+WORKDIR /app/backend
+CMD ["npm", "start"]

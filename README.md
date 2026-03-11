@@ -8,11 +8,11 @@ Sales Insight Automator is a secure, containerized web application that allows u
 
 ```mermaid
 graph TD;
-    Client[React Frontend] -->|POST /upload (CSV/XLSX + Email)| Backend[FastAPI Backend];
-    Backend -->|Parse Data| Pandas[Pandas DataFrame];
-    Pandas -->|Generate Summary| Gemini[Google Gemini API];
+    Client[React Frontend] -->|POST /upload (CSV/XLSX + Email)| Backend[Node.js Backend];
+    Backend -->|Parse Data| XLSX[XLSX Parser];
+    XLSX -->|Generate Summary| Gemini[Google Gemini API];
     Gemini -->|AI Summary| Backend;
-    Backend -->|Send Email| EmailService[SendGrid / SMTP];
+    Backend -->|Send Email| EmailService[SendGrid / Nodemailer];
     EmailService -->|Delivers to| UserEmail[User Inbox];
 ```
 
