@@ -73,6 +73,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     if (!email_address) {
       return res.status(400).json({ detail: 'Email address is required' });
     }
+    
+    // Input Sanitization: Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email_address)) {
+      return res.status(400).json({ detail: 'Invalid email address format' });
+    }
 
     // Parse the file safely with XLSX
     const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });

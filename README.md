@@ -1,79 +1,91 @@
-# The Engineer's Log: Sales Insight Automator
+# Sales Insight Automator
 
 ## Project Overview
 
-Sales Insight Automator is a secure, containerized web application that allows users to upload a CSV or XLSX sales data file, enter a recipient email address, and receive an AI-generated executive summary of the data via email. It leverages the Google Gemini API for powerful, dynamic data summarization.
+Sales Insight Automator is a complete, containerized full-stack web application. It allows business users to upload a raw CSV or XLSX sales data file, enter their email address, and receive an instant, AI-generated executive summary analyzing their sales data.
 
-## Architecture Diagram
+The project uses the **Google Gemini API** to generate powerful business intelligence summaries and handles automated delivery using SendGrid or SMTP securely.
+
+## Architecture Map
 
 ```mermaid
 graph TD;
-    Client[React Frontend] -->|POST /upload (CSV/XLSX + Email)| Backend[Node.js Backend];
-    Backend -->|Parse Data| XLSX[XLSX Parser];
-    XLSX -->|Generate Summary| Gemini[Google Gemini API];
-    Gemini -->|AI Summary| Backend;
-    Backend -->|Send Email| EmailService[SendGrid / Nodemailer];
-    EmailService -->|Delivers to| UserEmail[User Inbox];
+    Client[React Frontend] -->|POST /upload (CSV/XLSX + Email)| Backend[Node.js Express API];
+    Backend -->|Parse Data| DataBuffer[XLSX Parser];
+    DataBuffer -->|Analyze Sample| Gemini[Google Gemini API];
+    Gemini -->|AI Summary String| Backend;
+    Backend -->|Dispatch Email| EmailService[SendGrid / Nodemailer];
+    EmailService -->|Delivers to| Inbox[End User Inbox];
 ```
 
-## 1. A brief overview of how you secured the endpoints
+## Security & Protections Implemented
 
-To ensure the application is robust and secured against common vulnerabilities and resource abuse:
-- **File Type Validation**: The backend strictly validates and allows only `.csv` or `.xlsx` files, rejecting malicious payloads or unexpected file types immediately.
-- **Payload Size Restriction**: To prevent memory exhaustion and DoS attacks (Denial of Service), the API enforces a strict file size limit of 5MB per upload.
-- **API Secret Management**: External API keys (`GEMINI_API_KEY`, etc.) are secured and managed through environment variables locally or in production securely. These tokens are absolutely decoupled from the client, meaning no secrets are exposed to the browser.
-- **CORS Policies**: Explicit Cross-Origin Resource Sharing rules are integrated. While permissive locally (`*` for easiest onboarding), production configuration securely constraints origins primarily to the trusted frontend domains (e.g., `https://your-vercel-frontend-domain.com`).
-- **Error Handling**: Exceptions are caught natively and logged server-side, preventing raw stack traces or internal environment variables from leaking out into client JSON responses.
+To prepare this application for production use, strict protections have been applied to the API:
+- **File Type Validation**: Only `.csv` and `.xlsx` files are permitted. Multer middleware rejects unintended executable payloads instantly.
+- **Max File Size Guard**: Uploads are strictly capped at 5MB preventing memory-starvation DDOS attempts.
+- **Input Sanitization**: Email addresses undergo RegExp sanitization validating syntax before processing or storing in memory.
+- **Secret Management**: Cloud keys, API credentials, and mail passwords are read safely from `.env` parameters; the frontend compiles strictly off `VITE_API_URL` without exposing tokens.
 
-## 2. Environment Configuration (`.env.example`)
+## Application Endpoints
 
-Copy the `.env.example` file to `.env` in the root directory and update it with your actual credentials.
+### `POST /upload`
+Expects `multipart/form-data`:
+- `file`: `(binary, 5MB max)` The dataset to analyze.
+- `email_address`: `(string, email syntax)` The destination inbox.
 
+Returns JSON format indicating status (success/failure) and the generated summary string.
+
+### `/docs`
+An interactive **Swagger UI** generated via OpenAPI v3 running natively. Use it to instantly test endpoints and inspect HTTP request/response schemas.
+
+---
+
+## 🛠 Local Setup & Development
+
+### 1. Environment Setup
+
+Copy the environment template and configure your secrets:
 ```bash
 cp .env.example .env
 ```
 
-| Variable | Description |
-| -------- | ----------- |
-| `GEMINI_API_KEY` | Google Gemini API Key |
-| `SENDGRID_API_KEY` | (Optional) Sendgrid API key for emails |
-| `SMTP_HOST` | SMTP server host (e.g. `smtp.gmail.com`) |
-| `SMTP_USER` | Email username |
-| `SMTP_PASS` | SMTP app password |
-| `FROM_EMAIL` | Sender email identity |
+You must configure the following in `.env`:
+- `GEMINI_API_KEY`: Your working Google AI Studio API key.
+- `SMTP_HOST`: e.g. `smtp.gmail.com`
+- `SMTP_PORT`: e.g. `587`
+- `SMTP_USER`: Your email
+- `SMTP_PASS`: Your app-specific password
+- `FROM_EMAIL`: The reply-to header email
 
-## 3. Clear steps to run the stack via `docker-compose`
+### 2. Docker Usage (Recommended)
 
-### Prerequisites
-- Docker & Docker Compose
-- API Keys for Gemini and Sendgrid/SMTP
-
-### Local Development (Using Docker)
-To build and run the complete application stack locally:
+To spin up the completely containerized environment:
 
 ```bash
 docker-compose up --build
 ```
+* **Frontend UI**: http://localhost:5173
+* **Backend API**: http://localhost:8000
+* **API Documentation**: http://localhost:8000/docs
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8000
-- **Swagger Documentation**: http://localhost:8000/docs
+---
 
-## Deployment Configuration
+## 🚀 Cloud Deployment Instructions
 
-### Frontend: Vercel
+The project is built around `.github/workflows/ci.yml` strictly ensuring pull requests successfully build nodes, test integration layouts, and validate Docker builds before shipping.
+
+### Frontend Deployment → Vercel
 1. Push this repository to GitHub.
-2. Log into Vercel and import the project.
-3. Set the Framework Preset to **Vite**.
-4. Set the Root Directory to `frontend`.
-5. Add the environment variable `VITE_API_URL` pointing to the Render backend URL (e.g., `https://my-backend.onrender.com`).
-6. Deploy.
+2. Import the project in the Vercel Dashboard.
+3. Set the Framework Preset to **Vite** and Root Directory to `frontend`.
+4. Provide the environment variable `VITE_API_URL` equating to your Render backend URL.
+5. Deploy.
 
-### Backend: Render
-1. Create a new Web Service on Render.
+### Backend Deployment → Render
+1. Create a **New Web Service** on Render.
 2. Link your GitHub repository.
 3. Configure settings:
-   - Root Directory: `.` (or leave blank, Dockerfile is at root)
-   - Environment: `Docker`
-4. Add all required Environment Variables (`GEMINI_API_KEY`, `SMTP_*`, etc.).
+   - Root Directory: `.`
+   - Environment: **Docker**
+4. Bind Environment Variables: Populate all API keys (`GEMINI_API_KEY`, etc.) within the Render UI secrets configuration.
 5. Deploy.
