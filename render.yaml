@@ -2,19 +2,17 @@ services:
   - type: web
     name: rabbit-ai-backend
     env: node
-    plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: node index.js
+    autoDeploy: true
     envVars:
-      - key: PORT
-        value: 8000
       - key: GEMINI_API_KEY
         sync: false
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
-        value: 587
+        value: "587"
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS
@@ -22,13 +20,13 @@ services:
       - key: FROM_EMAIL
         sync: false
 
-  - type: static
+  - type: web
     name: rabbit-ai-frontend
     env: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishDir: dist
+    staticPublishPath: dist
+    autoDeploy: true
     envVars:
       - key: VITE_API_URL
         fromService:
