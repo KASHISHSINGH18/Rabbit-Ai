@@ -9,13 +9,13 @@ The project uses the **Google Gemini API** to generate powerful business intelli
 ## Architecture Map
 
 ```mermaid
-graph TD;
-    Client[React Frontend] -->|POST /upload (CSV/XLSX + Email)| Backend[Node.js Express API];
-    Backend -->|Parse Data| DataBuffer[XLSX Parser];
-    DataBuffer -->|Analyze Sample| Gemini[Google Gemini API];
-    Gemini -->|AI Summary String| Backend;
-    Backend -->|Dispatch Email| EmailService[SendGrid / Nodemailer];
-    EmailService -->|Delivers to| Inbox[End User Inbox];
+graph TD
+    Client[React Frontend] -->|Upload CSV| Backend[Node.js Express API]
+    Backend -->|Parse Data| Parser[XLSX Parser]
+    Parser -->|Send Data Sample| Gemini[Google Gemini API]
+    Gemini -->|Generate Summary| Backend
+    Backend -->|Send Email| EmailService[Nodemailer Service]
+    EmailService -->|Deliver Summary| Inbox[User Email]
 ```
 
 ## Security & Protections Implemented
