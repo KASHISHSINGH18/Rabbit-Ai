@@ -7,19 +7,16 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
-      - SMTP_HOST=${SMTP_HOST}
-      - SMTP_PORT=${SMTP_PORT}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASS=${SMTP_PASS}
-      - FROM_EMAIL=${FROM_EMAIL}
+    env_file:
+      - .env
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     volumes:
       - ./backend:/app/backend
 
   frontend:
-    image: node:18-alpine
+    image: node:20-alpine
     working_dir: /app/frontend
     volumes:
       - ./frontend:/app/frontend

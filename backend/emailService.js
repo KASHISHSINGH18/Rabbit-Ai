@@ -28,7 +28,7 @@ export async function sendEmailSummary(toEmail, summary) {
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;
 
-    if (!smtpHost || !smtpUser || !smtpPass) {
+    if (!smtpHost || !smtpUser || !smtpPass || smtpUser === 'your_email@gmail.com') {
       console.log("Email service not fully configured. Outputting to console:");
       console.log("\n================ EMAIL CONTENT ================");
       console.log(`To: ${toEmail}`);

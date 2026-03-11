@@ -1,4 +1,7 @@
-FROM node:18-alpine
+FROM node:20-alpine
+
+# Install CA certificates to fix TLS/HTTPS issues in Alpine musl libc
+RUN apk add --no-cache ca-certificates && update-ca-certificates
 
 WORKDIR /app
 

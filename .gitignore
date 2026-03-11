@@ -48,3 +48,10 @@ venv.bak/
 
 # macOS
 .DS_Store
+
+# Test artifacts
+*.json
+!package.json
+!package-lock.json
+error.txt
+*.log
