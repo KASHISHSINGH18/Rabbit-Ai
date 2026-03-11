@@ -95,14 +95,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     const summary = await generateSummary(dataString);
     
-    // Attempt to send email, but don't fail the request if SMTP times out (common on cloud free tiers)
-    try {
-      await sendEmailSummary(email_address, summary);
-    } catch (emailErr) {
-      console.warn("Email delivery failed, but summary was generated:", emailErr.message);
-    }
+    // Fire and forget: send email in the background so the user doesn't have to wait for SMTP timeouts
+    sendEmailSummary(email_address, summary).catch(err => {
+      console.warn("Background email delivery failed:", err.message);
+    });
 
-    res.json({ status: 'success', summary });
+    return res.json({ status: 'success', summary });
   } catch (err) {
     if (err.message && err.message.includes('Invalid file type')) {
       return res.status(400).json({ detail: err.message });
